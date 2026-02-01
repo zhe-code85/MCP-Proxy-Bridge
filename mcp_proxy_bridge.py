@@ -1,4 +1,5 @@
-﻿import argparse
+﻿#!/usr/bin/env python3
+import argparse
 import asyncio
 import json
 from dataclasses import dataclass, field
@@ -244,3 +245,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+

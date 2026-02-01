@@ -1,0 +1,11 @@
+﻿[project]
+name = "mcp-proxy-bridge"
+version = "0.1.0"
+description = "MCP compatibility proxy bridge for Codex and legacy MCP servers"
+requires-python = ">=3.11"
+dependencies = [
+  "aiohttp>=3.9.0"
+]
+
+[tool.uv]
+package = false

@@ -10,6 +10,22 @@ python mcp_proxy_bridge.py --config mcp_proxy_bridge.toml
 python mcp_proxy_bridge.py --config mcp_proxy_bridge.toml --debug
 ```
 
+### 一键启动（Windows）
+
+PowerShell：
+```powershell
+setx MCP_API_KEY "你的纯token"
+.\start.ps1
+.\start.ps1 -Debug
+```
+
+CMD：
+```bat
+set MCP_API_KEY=你的纯token
+start.cmd
+start.cmd --debug
+```
+
 ## 2) 配置文件
 
 `mcp_proxy_bridge.toml` 示例：
