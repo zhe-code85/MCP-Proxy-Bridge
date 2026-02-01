@@ -1,0 +1,19 @@
+[server]
+listen_host = "127.0.0.1"
+listen_port = 8765
+
+[services.web-reader]
+upstream_url = "https://open.bigmodel.cn/api/mcp/web_reader/mcp"
+# service supports 2024-11-05
+# codex expects 2025-06-18
+# proxy will downgrade request and rewrite response
+# use auth_env for token (proxy will add Bearer)
+auth_env = "MCP_API_KEY"
+
+[services.web-search-prime]
+upstream_url = "https://open.bigmodel.cn/api/mcp/web_search_prime/mcp"
+auth_env = "MCP_API_KEY"
+
+[services.zread]
+upstream_url = "https://open.bigmodel.cn/api/mcp/zread/mcp"
+auth_env = "MCP_API_KEY"
