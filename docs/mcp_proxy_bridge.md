@@ -21,15 +21,12 @@ listen_port = 8765
 
 [services.web-reader]
 upstream_url = "https://open.bigmodel.cn/api/mcp/web_reader/mcp"
-auth_env = "MCP_API_KEY"
 
 [services.web-search-prime]
 upstream_url = "https://open.bigmodel.cn/api/mcp/web_search_prime/mcp"
-auth_env = "MCP_API_KEY"
 
 [services.zread]
 upstream_url = "https://open.bigmodel.cn/api/mcp/zread/mcp"
-auth_env = "MCP_API_KEY"
 
 # 可选：为单个服务指定版本/头部/行为（放在对应 service 下）
 # target_protocol_version = "2024-11-05"
@@ -45,9 +42,7 @@ auth_env = "MCP_API_KEY"
 - `client_protocol_version`：Codex 期望的版本（默认 `2025-06-18`）
 - `accept`：默认 `application/json, text/event-stream`
 - `content_type`：默认 `application/json`
-- `auth_env`：环境变量名（推荐，脚本自动拼接 `Bearer`）
-- `auth_header`：完整 Authorization（不推荐，手动拼接）
-- `auth_scheme`：认证方案名（默认 `Bearer`）
+- `Authorization` 由 Codex 端传入（代理不处理鉴权）
 - `inject_tools_list`：是否缓存并注入 tools/list（默认 true）
 - `notify_tools_changed`：是否触发 tools/list_changed（默认 true）
 
@@ -62,6 +57,7 @@ url = "http://127.0.0.1:8765/mcp/web-reader"
 [mcp_servers.web-reader.http_headers]
 Accept = "application/json, text/event-stream"
 Content-Type = "application/json"
+Authorization = "Bearer YOUR_TOKEN"
 
 [mcp_servers.web-search-prime]
 url = "http://127.0.0.1:8765/mcp/web-search-prime"
@@ -69,6 +65,7 @@ url = "http://127.0.0.1:8765/mcp/web-search-prime"
 [mcp_servers.web-search-prime.http_headers]
 Accept = "application/json, text/event-stream"
 Content-Type = "application/json"
+Authorization = "Bearer YOUR_TOKEN"
 
 [mcp_servers.zread]
 url = "http://127.0.0.1:8765/mcp/zread"
@@ -76,20 +73,35 @@ url = "http://127.0.0.1:8765/mcp/zread"
 [mcp_servers.zread.http_headers]
 Accept = "application/json, text/event-stream"
 Content-Type = "application/json"
+Authorization = "Bearer YOUR_TOKEN"
 ```
 
-> 注意：`auth_header` 已在代理中设置，Codex 端不需要再写 Authorization。
+> 注意：鉴权放在 Codex 的 `config.toml`，代理只透传 `Authorization`。
 
-### 可选：在 Codex 端加 Authorization
+### Codex 端鉴权（优先 bearer_token_env_var）
 
+方式 A：bearer_token_env_var（推荐）
 ```toml
 [mcp_servers.web-reader]
 url = "http://127.0.0.1:8765/mcp/web-reader"
+bearer_token_env_var = "MCP_API_KEY"
+```
+环境变量中设置：
+```
+MCP_API_KEY=你的纯token
+```
 
-[mcp_servers.web-reader.http_headers]
-Authorization = "Bearer YOUR_TOKEN"
-Accept = "application/json, text/event-stream"
-Content-Type = "application/json"
+方式 B：明文写入 `Authorization`
+
+方式 C：env_http_headers（自定义 Authorization）
+```toml
+[mcp_servers.web-reader]
+url = "http://127.0.0.1:8765/mcp/web-reader"
+env_http_headers = { "Authorization" = "MCP_API_AUTH" }
+```
+环境变量中设置：
+```
+MCP_API_AUTH=Bearer <token>
 ```
 
 ### 规范要点

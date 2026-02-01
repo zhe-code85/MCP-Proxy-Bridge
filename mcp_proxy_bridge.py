@@ -4,7 +4,6 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
-import os
 
 from aiohttp import web, ClientSession
 
@@ -17,9 +16,6 @@ class ServiceConfig:
     client_protocol_version: str
     accept: str = "application/json, text/event-stream"
     content_type: str = "application/json"
-    auth_header: str | None = None
-    auth_env: str | None = None
-    auth_scheme: str = "Bearer"
     inject_tools_list: bool = True
     notify_tools_changed: bool = True
 
@@ -61,9 +57,6 @@ def load_config(path: Path) -> ProxyConfig:
             client_protocol_version=svc.get("client_protocol_version", "2025-06-18"),
             accept=svc.get("accept", "application/json, text/event-stream"),
             content_type=svc.get("content_type", "application/json"),
-            auth_header=svc.get("auth_header"),
-            auth_env=svc.get("auth_env"),
-            auth_scheme=svc.get("auth_scheme", "Bearer"),
             inject_tools_list=bool(svc.get("inject_tools_list", True)),
             notify_tools_changed=bool(svc.get("notify_tools_changed", True)),
         )
@@ -72,13 +65,6 @@ def load_config(path: Path) -> ProxyConfig:
 
 def _norm_session_id(headers: dict[str, str]) -> str | None:
     return headers.get("mcp-session-id") or headers.get("Mcp-Session-Id")
-
-def _resolve_auth_header(svc: ServiceConfig) -> str | None:
-    if svc.auth_env:
-        token = os.environ.get(svc.auth_env)
-        if token:
-            return f"{svc.auth_scheme} {token}"
-    return svc.auth_header
 
 
 async def fetch_tools(svc: ServiceConfig, headers: dict[str, str]) -> list[dict[str, Any]] | None:
@@ -123,9 +109,7 @@ def make_handler(cfg: ProxyConfig, state_map: dict[str, ServiceState]):
         # Force Accept/Content-Type
         headers["Accept"] = svc.accept
         headers["Content-Type"] = svc.content_type
-        auth_header = _resolve_auth_header(svc)
-        if auth_header:
-            headers["Authorization"] = auth_header
+        # Authorization is passed through from Codex config.toml
 
         rpc_method = None
         if method == "POST" and data:
